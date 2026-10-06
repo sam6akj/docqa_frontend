@@ -1,4 +1,4 @@
-import { getAccessToken } from "@/lib/api";
+import { apiFetch, apiJson } from "@/lib/api";
 
 export type ChatSource = { index: number; content: string };
 
@@ -19,31 +19,17 @@ type ChatCallbacks = {
 };
 
 export async function listThreads(documentId: string): Promise<ThreadSummary[]> {
-  const res = await fetch(`/api/documents/${documentId}/threads`, {
-    headers: { Authorization: `Bearer ${getAccessToken()}` },
-    credentials: "include",
-  });
-  if (!res.ok) throw new Error("Failed to load conversations");
-  const data = await res.json();
+  const data = await apiJson<{ threads: ThreadSummary[] }>(`/documents/${documentId}/threads`);
   return data.threads;
 }
 
 export async function loadThreadMessages(threadId: string): Promise<ThreadMessage[]> {
-  const res = await fetch(`/api/threads/${threadId}/messages`, {
-    headers: { Authorization: `Bearer ${getAccessToken()}` },
-    credentials: "include",
-  });
-  if (!res.ok) throw new Error("Failed to load messages");
-  const data = await res.json();
+  const data = await apiJson<{ messages: ThreadMessage[] }>(`/threads/${threadId}/messages`);
   return data.messages;
 }
 
 export async function deleteThread(threadId: string): Promise<void> {
-  const res = await fetch(`/api/threads/${threadId}`, {
-    method: "DELETE",
-    headers: { Authorization: `Bearer ${getAccessToken()}` },
-    credentials: "include",
-  });
+  const res = await apiFetch(`/threads/${threadId}`, { method: "DELETE" });
   if (!res.ok && res.status !== 204) throw new Error("Failed to delete conversation");
 }
 
@@ -51,16 +37,11 @@ export async function sendMessage(
   { documentId, threadId, question }: { documentId: string; threadId: string | null; question: string },
   { onThreadId, onToken, onDone, onError }: ChatCallbacks
 ): Promise<void> {
-  const url = threadId ? `/api/threads/${threadId}/chat` : `/api/documents/${documentId}/threads`;
+  const path = threadId ? `/threads/${threadId}/chat` : `/documents/${documentId}/threads`;
 
   try {
-    const res = await fetch(url, {
+    const res = await apiFetch(path, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${getAccessToken()}`,
-      },
-      credentials: "include",
       body: JSON.stringify({ question }),
     });
 
