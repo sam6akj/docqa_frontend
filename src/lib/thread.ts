@@ -1,6 +1,6 @@
 import { getAccessToken } from "@/lib/api";
 
-export type ChatSource = number;
+export type ChatSource = { index: number; content: string };
 
 export type ThreadSummary = { id: string; title: string; updatedAt: string };
 
@@ -8,7 +8,7 @@ export type ThreadMessage = {
   id: string;
   role: "user" | "assistant";
   content: string;
-  sources: number[] | null;
+  sources: ChatSource[] | null;
 };
 
 type ChatCallbacks = {

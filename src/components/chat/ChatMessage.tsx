@@ -3,12 +3,14 @@ import ReactMarkdown from "react-markdown";
 import { Check, Copy, FileText, Sparkles, TriangleAlert } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { cn } from "@/lib/utils";
+import type { ChatSource } from "@/lib/thread";
 
 export type Message = {
   role: "user" | "assistant";
   content: string;
-  sources?: number[];
+  sources?: ChatSource[];
   isStreaming?: boolean;
   isError?: boolean;
 };
@@ -121,10 +123,22 @@ export function ChatMessage({ message }: { message: Message }) {
               <>
                 <span className="text-xs text-muted-foreground">Sources</span>
                 {message.sources!.map((s) => (
-                  <Badge key={s} variant="secondary" className="gap-1 rounded-full font-normal">
-                    <FileText className="size-3" />
-                    {s}
-                  </Badge>
+                  <HoverCard key={s.index} openDelay={150} closeDelay={100}>
+                    <HoverCardTrigger asChild>
+                      <Badge variant="secondary" className="cursor-default gap-1 rounded-full font-normal">
+                        <FileText className="size-3" />
+                        {s.index}
+                      </Badge>
+                    </HoverCardTrigger>
+                    <HoverCardContent className="w-80 text-sm" side="top">
+                      <p className="mb-1.5 text-xs font-medium text-muted-foreground">
+                        Source {s.index} — excerpt sent to the model
+                      </p>
+                      <p className="max-h-48 overflow-y-auto whitespace-pre-wrap text-foreground">
+                        {s.content}
+                      </p>
+                    </HoverCardContent>
+                  </HoverCard>
                 ))}
               </>
             )}
